@@ -14,8 +14,8 @@ My Discord: ogidev
 
 ## General Setup
 
-SHOWCASE: https://streamable.com/xo5yu6
-Huge inspiration: https://forum.cfx.re/t/release-js-radio/52121
+1. SHOWCASE: https://streamable.com/xo5yu6
+2. Huge inspiration: https://forum.cfx.re/t/release-js-radio/52121
 
 ## Dependencies
 
@@ -29,12 +29,12 @@ Huge inspiration: https://forum.cfx.re/t/release-js-radio/52121
 2. Locate config.lua > availableRadios, this list provides a complete list of radios that are available in GTA 5
 3. Locate fxmanifest.lua
 4. Add / Remove radios like shown in the examples. (Do not remove the radio with url = "options", you will lose the options menu on the radio wheel)
-NOTE: URLs must be https://...
+5. NOTE: URLs must be https://...
 
 ## Features
 
 1. Fully synced radios between players
-2. Radios playing outside of the vehicles
+2. Radios can be heard outside of the vehicles that have their engines on
 3. 0.00 - 0.01 CPU usage
 4. Multi-Language Support using QBCore Locales
 5. 24/7 Support on discord
