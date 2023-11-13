@@ -1,4 +1,21 @@
-QBCore = exports['qb-core']:GetCoreObject()
+if Config.Framework == "auto-detect" then
+    Config.Framework = AutoDetectFramework()
+end
+
+local function AutoDetectFramework()
+    if GetResourceState("es_extended") == "started" then
+        return "ESX"
+    else
+        return "qbcore"
+    end
+end
+
+if Config.Framework == "ESX" then
+    ESX = exports["es_extended"]:getSharedObject()
+elseif Config.Framework == "qbcore" then
+    QBCore = nil
+    QBCore = exports["qb-core"]:GetCoreObject()
+end
 
 local customStations = {}
 local liveRadioSounds = {}
@@ -25,13 +42,210 @@ for i = 0, GetNumResourceMetadata("ogi-car-radio", "supersede_radio") - 1 do
     end
 end
 
-RegisterNetEvent("QBCore:Client:OnPlayerLoaded", function()
-    QBCore.Functions.TriggerCallback('ogi-car-radio:server:getRadios', function(vehicles)
-        for vehNetId, info in pairs(vehicles) do
-            TriggerEvent('ogi-car-radio:client:syncAudio', vehNetId, info.radio, info.volume, info.url)
+if Config.Framework == "ESX" then
+    AddEventHandler('onResourceStart', function(resourceName)
+        if (GetCurrentResourceName() ~= resourceName) then
+            return
+        end
+        ESX.TriggerServerCallback('ogi-car-radio:server:getRadios', function(vehicles)
+            for vehNetId, info in pairs(vehicles) do
+                TriggerEvent('ogi-car-radio:client:syncAudio', vehNetId, info.radio, info.volume, info.url)
+            end
+        end)
+    end)
+
+    RegisterNetEvent('esx:playerLoaded')
+    AddEventHandler('esx:playerLoaded', function()
+        ESX.TriggerServerCallback('ogi-car-radio:server:getRadios', function(vehicles)
+            for vehNetId, info in pairs(vehicles) do
+                TriggerEvent('ogi-car-radio:client:syncAudio', vehNetId, info.radio, info.volume, info.url)
+            end
+        end)
+    end)
+
+    RegisterNetEvent('esx:onPlayerLogout')
+	AddEventHandler('esx:onPlayerLogout', function()
+		PlayerLoaded = false
+		HUD = false
+		SendMessage('toggleHud', HUD)
+	end)
+
+    -- main logic
+    Citizen.CreateThread(function()
+        while true do
+            local ped = PlayerPedId()
+            local vehicle = GetVehiclePedIsIn(ped, false)
+            if vehicle ~= 0 and vehicle ~= nil then
+                radioStationName = GetPlayerRadioStationName()
+                if customStations[radioStationName] == "options" and not youtubeActive then
+                    StartAudioScene("DLC_MPHEIST_TRANSITION_TO_APT_FADE_IN_RADIO_SCENE")
+                    SetFrontendRadioActive(false)
+                    radioWheelDisabled = true
+                    local inputData = lib.inputDialog(Language[Config.Language]["name"], {
+                        {
+                            type = "number",
+                            label = Language[Config.Language]["volume_label"],
+                            icon = Language[Config.Language]["volume_icon"],
+                            min = 0,
+                            max = 10, -- do not change this
+                            placeholder = Language[Config.Language]["volume_help"],
+                            default = 2,
+                            required = true,
+                        },{
+                            type = "input",
+                            label = Language[Config.Language]["custom_url_label"], 
+                            icon = Language[Config.Language]["custom_url_icon"],
+                            placeholder = Language[Config.Language]["custom_url_help"],
+                        },
+                    })
+                    if inputData then
+                        radioVolume = inputData[1]/10
+                        if inputData[2] and inputData[2] ~= "" and isYoutubeUrl(inputData[2]) then
+                            youtubeActive = true
+                            TriggerServerEvent('ogi-car-radio:server:saveAudio', NetworkGetNetworkIdFromEntity(vehicle), customStations[radioStationName], radioVolume, inputData[2])
+                        else
+                            TriggerServerEvent('ogi-car-radio:server:saveAudio', NetworkGetNetworkIdFromEntity(vehicle), nil, radioVolume, nil)
+                        end
+                    else
+                        SetVehRadioStation(GetVehiclePedIsIn(PlayerPedId()),"OFF")
+                    end
+                end
+                ESX.TriggerServerCallback('ogi-car-radio:server:getRadioForVehicle', function(radio)
+                    if radio ~= customStations[radioStationName] and GetIsVehicleEngineRunning(vehicle) and IsVehicleRadioEnabled(vehicle) then -- PLAY NEW RADIO    
+                        radioWheelDisabled = true
+                        youtubeActive = false
+                        TriggerServerEvent('ogi-car-radio:server:saveAudio', NetworkGetNetworkIdFromEntity(vehicle), customStations[radioStationName], radioVolume, nil)
+                    elseif not GetIsVehicleEngineRunning(vehicle) or not IsVehicleRadioEnabled(vehicle) then -- STOP RADIO
+                        Citizen.SetTimeout(2000, function()
+                            if not IsVehicleRadioEnabled(vehicle) or not GetIsVehicleEngineRunning(vehicle) then
+                                radioWheelDisabled = false
+                                youtubeActive = false
+                                TriggerServerEvent('ogi-car-radio:server:saveAudio', NetworkGetNetworkIdFromEntity(vehicle), nil, radioVolume, nil)
+                            end
+                        end)
+                    end
+                end, NetworkGetNetworkIdFromEntity(vehicle))
+            end
+            Wait(2000)
         end
     end)
-end)
+
+    -- update radio station based on car
+    Citizen.CreateThread(function()
+        while true do
+            local sleep = 100
+            local ped = PlayerPedId()
+            local vehicle = GetVehiclePedIsEntering(ped)
+            if vehicle ~= 0 and vehicle ~= nil then
+                if NetworkDoesEntityExistWithNetworkId(NetworkGetNetworkIdFromEntity(vehicle)) then
+                    local vehNetId = NetworkGetNetworkIdFromEntity(vehicle)
+                    if xSound:soundExists('id_' .. vehNetId) or xSound:soundExists('idyt_' .. vehNetId) then
+                        ESX.TriggerServerCallback('ogi-car-radio:server:getRadioForVehicle', function(radio)
+                            if radio ~= nil then
+                                SetVehRadioStation(vehicle, get_key_for_value(customStations, radio))
+                                SetRadioToStationName(get_key_for_value(customStations, radio))
+                            end
+                        end, vehNetId)
+                    end
+                end
+            end
+            Wait(sleep)
+        end
+    end)
+
+else
+
+    RegisterNetEvent("QBCore:Client:OnPlayerLoaded", function()
+        QBCore.Functions.TriggerCallback('ogi-car-radio:server:getRadios', function(vehicles)
+            for vehNetId, info in pairs(vehicles) do
+                TriggerEvent('ogi-car-radio:client:syncAudio', vehNetId, info.radio, info.volume, info.url)
+            end
+        end)
+    end)
+
+    -- main logic
+    Citizen.CreateThread(function()
+        while true do
+            local ped = PlayerPedId()
+            local vehicle = GetVehiclePedIsIn(ped, false)
+            if vehicle ~= 0 and vehicle ~= nil then
+                radioStationName = GetPlayerRadioStationName()
+                if customStations[radioStationName] == "options" and not youtubeActive then
+                    StartAudioScene("DLC_MPHEIST_TRANSITION_TO_APT_FADE_IN_RADIO_SCENE")
+                    SetFrontendRadioActive(false)
+                    radioWheelDisabled = true
+                    local inputData = lib.inputDialog(Language[Config.Language]["name"], {
+                        {
+                            type = "number",
+                            label = Language[Config.Language]["volume_label"],
+                            icon = Language[Config.Language]["volume_icon"],
+                            min = 0,
+                            max = 10, -- do not change this
+                            placeholder = Language[Config.Language]["volume_help"],
+                            default = 2,
+                            required = true,
+                        },{
+                            type = "input",
+                            label = Language[Config.Language]["custom_url_label"], 
+                            icon = Language[Config.Language]["custom_url_icon"],
+                            placeholder = Language[Config.Language]["custom_url_help"],
+                        },
+                    })
+                    if inputData then
+                        radioVolume = inputData[1]/10
+                        if inputData[2] and inputData[2] ~= "" and isYoutubeUrl(inputData[2]) then
+                            youtubeActive = true
+                            TriggerServerEvent('ogi-car-radio:server:saveAudio', NetworkGetNetworkIdFromEntity(vehicle), customStations[radioStationName], radioVolume, inputData[2])
+                        else
+                            TriggerServerEvent('ogi-car-radio:server:saveAudio', NetworkGetNetworkIdFromEntity(vehicle), nil, radioVolume, nil)
+                        end
+                    else
+                        SetVehRadioStation(GetVehiclePedIsIn(PlayerPedId()),"OFF")
+                    end
+                end
+                QBCore.Functions.TriggerCallback('ogi-car-radio:server:getRadioForVehicle', function(radio)
+                    if radio ~= customStations[radioStationName] and GetIsVehicleEngineRunning(vehicle) and IsVehicleRadioEnabled(vehicle) then -- PLAY NEW RADIO    
+                        radioWheelDisabled = true
+                        youtubeActive = false
+                        TriggerServerEvent('ogi-car-radio:server:saveAudio', NetworkGetNetworkIdFromEntity(vehicle), customStations[radioStationName], radioVolume, nil)
+                    elseif not GetIsVehicleEngineRunning(vehicle) or not IsVehicleRadioEnabled(vehicle) then -- STOP RADIO
+                        Citizen.SetTimeout(2000, function()
+                            if not IsVehicleRadioEnabled(vehicle) or not GetIsVehicleEngineRunning(vehicle) then
+                                radioWheelDisabled = false
+                                youtubeActive = false
+                                TriggerServerEvent('ogi-car-radio:server:saveAudio', NetworkGetNetworkIdFromEntity(vehicle), nil, radioVolume, nil)
+                            end
+                        end)
+                    end
+                end, NetworkGetNetworkIdFromEntity(vehicle))
+            end
+            Wait(2000)
+        end
+    end)
+
+    -- update radio station based on car
+    Citizen.CreateThread(function()
+        while true do
+            local sleep = 100
+            local ped = PlayerPedId()
+            local vehicle = GetVehiclePedIsEntering(ped)
+            if vehicle ~= 0 and vehicle ~= nil then
+                if NetworkDoesEntityExistWithNetworkId(NetworkGetNetworkIdFromEntity(vehicle)) then
+                    local vehNetId = NetworkGetNetworkIdFromEntity(vehicle)
+                    if xSound:soundExists('id_' .. vehNetId) or xSound:soundExists('idyt_' .. vehNetId) then
+                        QBCore.Functions.TriggerCallback('ogi-car-radio:server:getRadioForVehicle', function(radio)
+                            if radio ~= nil then
+                                SetVehRadioStation(vehicle, get_key_for_value(customStations, radio))
+                                SetRadioToStationName(get_key_for_value(customStations, radio))
+                            end
+                        end, vehNetId)
+                    end
+                end
+            end
+            Wait(sleep)
+        end
+    end)
+end
 
 RegisterNetEvent('ogi-car-radio:client:syncAudio', function(vehNetId, musicId)
     StartAudioScene("DLC_MPHEIST_TRANSITION_TO_APT_FADE_IN_RADIO_SCENE")
@@ -66,90 +280,6 @@ Citizen.CreateThread(function()
     end
 end)
 
--- main logic
-Citizen.CreateThread(function()
-    while true do
-        local ped = PlayerPedId()
-        local vehicle = GetVehiclePedIsIn(ped, false)
-        if vehicle ~= 0 and vehicle ~= nil then
-            radioStationName = GetPlayerRadioStationName()
-            if customStations[radioStationName] == "options" and not youtubeActive then
-                StartAudioScene("DLC_MPHEIST_TRANSITION_TO_APT_FADE_IN_RADIO_SCENE")
-                SetFrontendRadioActive(false)
-                radioWheelDisabled = true
-                local inputData = lib.inputDialog(Lang:t("options.name"), {
-                    {
-                        type = "number",
-                        label = Lang:t("options.volume_label"),
-                        icon = Lang:t("options.volume_icon"),
-                        min = 0,
-                        max = 10, -- do not change this
-                        placeholder = Lang:t("options.volume_help"),
-                        default = 2,
-                        required = true,
-                    },{
-                        type = "input",
-                        label = Lang:t("options.custom_url_label"),
-                        icon = Lang:t("options.custom_url_icon"),
-                        placeholder = Lang:t("options.custom_url_help"),
-                    },
-                })
-                if inputData then
-                    radioVolume = inputData[1]/10
-                    if inputData[2] and inputData[2] ~= "" and isYoutubeUrl(inputData[2]) then
-                        youtubeActive = true
-                        TriggerServerEvent('ogi-car-radio:server:saveAudio', NetworkGetNetworkIdFromEntity(vehicle), customStations[radioStationName], radioVolume, inputData[2])
-                    else
-                        SetVehRadioStation(GetVehiclePedIsIn(PlayerPedId()),"OFF")
-                        TriggerServerEvent('ogi-car-radio:server:saveAudio', NetworkGetNetworkIdFromEntity(vehicle), nil, radioVolume, nil)
-                    end
-                else
-                    SetVehRadioStation(GetVehiclePedIsIn(PlayerPedId()),"OFF")
-                end
-            end
-            QBCore.Functions.TriggerCallback('ogi-car-radio:server:getRadioForVehicle', function(radio)
-                if radio ~= customStations[radioStationName] and GetIsVehicleEngineRunning(vehicle) and IsVehicleRadioEnabled(vehicle) then -- PLAY NEW RADIO    
-                    radioWheelDisabled = true
-                    youtubeActive = false
-                    TriggerServerEvent('ogi-car-radio:server:saveAudio', NetworkGetNetworkIdFromEntity(vehicle), customStations[radioStationName], radioVolume, nil)
-                elseif not GetIsVehicleEngineRunning(vehicle) or not IsVehicleRadioEnabled(vehicle) then -- STOP RADIO
-                    Citizen.SetTimeout(2000, function()
-                        if not IsVehicleRadioEnabled(vehicle) or not GetIsVehicleEngineRunning(vehicle) then
-                            radioWheelDisabled = false
-                            youtubeActive = false
-                            TriggerServerEvent('ogi-car-radio:server:saveAudio', NetworkGetNetworkIdFromEntity(vehicle), nil, radioVolume, nil)
-                        end
-                    end)
-                end
-            end, NetworkGetNetworkIdFromEntity(vehicle))
-        end
-        Wait(2000)
-    end
-end)
-
--- update radio station based on car
-Citizen.CreateThread(function()
-    while true do
-        local sleep = 100
-        local ped = PlayerPedId()
-        local vehicle = GetVehiclePedIsEntering(ped)
-        if vehicle ~= 0 and vehicle ~= nil then
-            if NetworkDoesEntityExistWithNetworkId(NetworkGetNetworkIdFromEntity(vehicle)) then
-                local vehNetId = NetworkGetNetworkIdFromEntity(vehicle)
-                if xSound:soundExists('id_' .. vehNetId) or xSound:soundExists('idyt_' .. vehNetId) then
-                    QBCore.Functions.TriggerCallback('ogi-car-radio:server:getRadioForVehicle', function(radio)
-                        if radio ~= nil then
-                            SetVehRadioStation(vehicle, get_key_for_value(customStations, radio))
-                            SetRadioToStationName(get_key_for_value(customStations, radio))
-                        end
-                    end, vehNetId)
-                end
-            end
-        end
-        Wait(sleep)
-    end
-end)
-
 -- update sound pos or destroy if vehicle is gone
 Citizen.CreateThread(function()
     while true do
@@ -157,7 +287,7 @@ Citizen.CreateThread(function()
         for vehNetId, musicId in pairs(liveRadioSounds) do
             if musicId == nil then
                 liveRadioSounds[vehNetId] = nil
-            elseif not NetworkDoesEntityExistWithNetworkId(vehNetId) or GetVehicleEngineHealth(NetworkGetEntityFromNetworkId(vehNetId)) < 0 then
+            elseif not NetworkDoesEntityExistWithNetworkId(vehNetId) then
                 xSound:Destroy(musicId)
                 liveRadioSounds[vehNetId] = nil
             else

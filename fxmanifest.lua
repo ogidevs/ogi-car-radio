@@ -2,21 +2,22 @@ fx_version 'cerulean'
 game 'gta5'
 author 'ogidevs'
 version '0.0.1'
-description 'Car audio system for QBCore'
+description 'Car audio system for QBCore/ESX'
 
 client_scripts {
+	"locales/main.lua",
 	"client.lua",
 }
 
 server_scripts {
+	"locales/main.lua",
 	"server.lua",
 }
 
 shared_scripts {
     "@ox_lib/init.lua",
 	"config.lua",
-	'@qb-core/shared/locale.lua',
-    'locales/en.lua',
+    'locales/main.lua',
 }
 
 dependencies {

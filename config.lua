@@ -1,5 +1,9 @@
 Config = {}
 
+Config.Framework = "auto-detect" -- Framework | types: auto-detect, qbcore, ESX
+
+Config.Language = 'EN' --[ 'EN' / 'PT' / 'SR' ]   You can add your own locales to Locales.lua, but be sure to update the Config.Language to match it.
+
 -- default volume for the radio
 Config.defaultRadioVolume = 0.2
 -- max distance for the radio to be heard
