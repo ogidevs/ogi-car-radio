@@ -100,6 +100,7 @@ Citizen.CreateThread(function()
                         youtubeActive = true
                         TriggerServerEvent('ogi-car-radio:server:saveAudio', NetworkGetNetworkIdFromEntity(vehicle), customStations[radioStationName], radioVolume, inputData[2])
                     else
+                        SetVehRadioStation(GetVehiclePedIsIn(PlayerPedId()),"OFF")
                         TriggerServerEvent('ogi-car-radio:server:saveAudio', NetworkGetNetworkIdFromEntity(vehicle), nil, radioVolume, nil)
                     end
                 else
