@@ -39,6 +39,8 @@ My Discord: ogidev
 4. Multi-Language Support using QBCore Locales
 5. 24/7 Support on discord
 
+https://cdn.discordapp.com/attachments/1173699009806860308/1173699010482151454/image.png?ex=6564e762&is=65527262&hm=3581b96296c25881a8c668c6c528f5f5ffe977d2aca730bfc762661a4546fea7&
+
 ## Bugs
 
 If you encounter any bug, please feel free to reach out to me on discord (ogidev)
