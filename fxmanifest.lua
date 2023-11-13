@@ -16,7 +16,6 @@ shared_scripts {
 	"config.lua",
 	'@qb-core/shared/locale.lua',
     'locales/en.lua',
-	"utils.lua",
 }
 
 dependencies {
