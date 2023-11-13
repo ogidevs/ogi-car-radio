@@ -19,9 +19,9 @@ Huge inspiration: https://forum.cfx.re/t/release-js-radio/52121
 
 ## Dependencies
 
-1. QBCore
-2. ox_lib - for the options menu
-3. xsound
+1. qb-core (https://github.com/search?q=qbcore&type=repositories)
+2. ox_lib - for the options menu (https://github.com/overextended/ox_lib)
+3. xsound (https://github.com/Xogy/xsound)
 
 ## Installation
 
