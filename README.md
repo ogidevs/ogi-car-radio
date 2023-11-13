@@ -25,7 +25,7 @@ Huge inspiration: https://forum.cfx.re/t/release-js-radio/52121
 
 ## Installation
 
-1. Download the resource, put it in your resources folder, ensure it and then do ther following:
+1. Download the resource, put it in your resources folder, ensure it and then do the following:
 2. Locate utils.lua > availableRadios, this list provides a complete list of radios that are available in GTA 5
 3. Locate fxmanifest.lua
 4. Add / Remove radios like shown in the examples. (Do not remove the radio with url = "options", you will lose the options menu on the radio wheel)
