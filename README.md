@@ -48,7 +48,7 @@ If you encounter any bug, please feel free to reach out to me on discord (ogidev
 ## TODO
 
 1. ~~Add support for ESX~~
-2. ~~Add support for different inputs~~
+2. Add support for different inputs
 3. ~~Refactoring / Optimisations~~
 
 ## YOUR PART
