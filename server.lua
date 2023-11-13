@@ -1,13 +1,13 @@
-if Config.Framework == "auto-detect" then
-    Config.Framework = AutoDetectFramework()
-end
-
 local function AutoDetectFramework()
     if GetResourceState("es_extended") == "started" then
         return "ESX"
     else
         return "qbcore"
     end
+end
+
+if Config.Framework == "auto-detect" then
+    Config.Framework = AutoDetectFramework()
 end
 
 if Config.Framework == "ESX" then

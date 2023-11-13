@@ -1,13 +1,13 @@
-if Config.Framework == "auto-detect" then
-    Config.Framework = AutoDetectFramework()
-end
-
 local function AutoDetectFramework()
     if GetResourceState("es_extended") == "started" then
         return "ESX"
     else
         return "qbcore"
     end
+end
+
+if Config.Framework == "auto-detect" then
+    Config.Framework = AutoDetectFramework()
 end
 
 if Config.Framework == "ESX" then
@@ -43,17 +43,6 @@ for i = 0, GetNumResourceMetadata("ogi-car-radio", "supersede_radio") - 1 do
 end
 
 if Config.Framework == "ESX" then
-    AddEventHandler('onResourceStart', function(resourceName)
-        if (GetCurrentResourceName() ~= resourceName) then
-            return
-        end
-        ESX.TriggerServerCallback('ogi-car-radio:server:getRadios', function(vehicles)
-            for vehNetId, info in pairs(vehicles) do
-                TriggerEvent('ogi-car-radio:client:syncAudio', vehNetId, info.radio, info.volume, info.url)
-            end
-        end)
-    end)
-
     RegisterNetEvent('esx:playerLoaded')
     AddEventHandler('esx:playerLoaded', function()
         ESX.TriggerServerCallback('ogi-car-radio:server:getRadios', function(vehicles)
@@ -64,11 +53,11 @@ if Config.Framework == "ESX" then
     end)
 
     RegisterNetEvent('esx:onPlayerLogout')
-	AddEventHandler('esx:onPlayerLogout', function()
-		PlayerLoaded = false
-		HUD = false
-		SendMessage('toggleHud', HUD)
-	end)
+    AddEventHandler('esx:onPlayerLogout', function()
+        PlayerLoaded = false
+        HUD = false
+        SendMessage('toggleHud', HUD)
+    end)
 
     -- main logic
     Citizen.CreateThread(function()
