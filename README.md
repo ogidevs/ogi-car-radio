@@ -2,7 +2,6 @@
 My Discord: ogidev
 
 <details>
-    <summary><b>What is this resource?</b></summary>
         <p>
             This is a <b>FIVEM</b> vehicle radio script which keeps the original gta 5 radio look with the ability to change stations name, sound (as radios for example) and picture (hud.ytd -> change textures using open iv for example)
             Changing the radios sound and name is easily done through fxmanifest.lua
