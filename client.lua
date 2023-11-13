@@ -156,7 +156,7 @@ Citizen.CreateThread(function()
         for vehNetId, musicId in pairs(liveRadioSounds) do
             if musicId == nil then
                 liveRadioSounds[vehNetId] = nil
-            elseif not NetworkDoesEntityExistWithNetworkId(vehNetId) then
+            elseif not NetworkDoesEntityExistWithNetworkId(vehNetId) or GetVehicleEngineHealth(NetworkGetEntityFromNetworkId(vehNetId)) < 0 then
                 xSound:Destroy(musicId)
                 liveRadioSounds[vehNetId] = nil
             else
