@@ -9,7 +9,7 @@ My Discord: ogidev
 
 # Installation steps
 
-## General Setup
+## Overview
 
 1. SHOWCASE: https://streamable.com/xo5yu6
 2. Huge inspiration: https://forum.cfx.re/t/release-js-radio/52121
