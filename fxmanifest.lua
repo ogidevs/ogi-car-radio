@@ -1,7 +1,7 @@
 fx_version 'cerulean'
 game 'gta5'
 author 'ogidevs'
-version '0.0.1'
+version '0.0.2'
 description 'Car audio system for QBCore/ESX'
 
 client_scripts {
