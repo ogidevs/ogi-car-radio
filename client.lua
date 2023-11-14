@@ -86,9 +86,9 @@ Citizen.CreateThread(function()
                     radioVolume = inputData[1]/10
                     if inputData[2] and inputData[2] ~= "" and isYoutubeUrl(inputData[2]) then
                         youtubeActive = true
-                        TriggerServerEvent('ogi-car-radio:server:saveAudio', NetworkGetNetworkIdFromEntity(vehicle), customStations[radioStationName], radioVolume, inputData[2])
+                        TriggerServerEvent('ogi-car-radio:server:saveAudio', VehToNet(vehicle), customStations[radioStationName], radioVolume, inputData[2])
                     else
-                        TriggerServerEvent('ogi-car-radio:server:saveAudio', NetworkGetNetworkIdFromEntity(vehicle), nil, radioVolume, nil)
+                        TriggerServerEvent('ogi-car-radio:server:saveAudio', VehToNet(vehicle), nil, radioVolume, nil)
                     end
                 else
                     SetVehRadioStation(GetVehiclePedIsIn(PlayerPedId()),"OFF")
@@ -98,28 +98,32 @@ Citizen.CreateThread(function()
                 if radio ~= customStations[radioStationName] and GetIsVehicleEngineRunning(vehicle) and IsVehicleRadioEnabled(vehicle) then -- PLAY NEW RADIO    
                     radioWheelDisabled = true
                     youtubeActive = false
-                    TriggerServerEvent('ogi-car-radio:server:saveAudio', NetworkGetNetworkIdFromEntity(vehicle), customStations[radioStationName], radioVolume, nil)
+                    TriggerServerEvent('ogi-car-radio:server:saveAudio', VehToNet(vehicle), customStations[radioStationName], radioVolume, nil)
                 elseif not GetIsVehicleEngineRunning(vehicle) or not IsVehicleRadioEnabled(vehicle) then -- STOP RADIO
                     Citizen.SetTimeout(1500, function() -- wait for the player to leave vehicle
                         if not IsVehicleRadioEnabled(vehicle) or not GetIsVehicleEngineRunning(vehicle) then
                             radioWheelDisabled = false
                             youtubeActive = false
-                            TriggerServerEvent('ogi-car-radio:server:saveAudio', NetworkGetNetworkIdFromEntity(vehicle), nil, radioVolume, nil)
+                            TriggerServerEvent('ogi-car-radio:server:saveAudio', VehToNet(vehicle), nil, radioVolume, nil)
                         end
                     end)
                 end
-            end, NetworkGetNetworkIdFromEntity(vehicle))
+            end, VehToNet(vehicle))
         else
             local vehicle = GetVehiclePedIsIn(ped, true)
-            lib.callback('ogi-car-radio:server:getRadioForVehicle', false, function(radio)
-                if not GetIsVehicleEngineRunning(vehicle) or not IsVehicleRadioEnabled(vehicle) then -- stop radio
-                    if not IsVehicleRadioEnabled(vehicle) or not GetIsVehicleEngineRunning(vehicle) then
-                        radioWheelDisabled = false
-                        youtubeActive = false
-                        TriggerServerEvent('ogi-car-radio:server:saveAudio', NetworkGetNetworkIdFromEntity(vehicle), nil, radioVolume, nil)
-                    end
+            if vehicle ~= 0 and vehicle ~= nil then
+                if NetworkDoesEntityExistWithNetworkId(VehToNet(vehicle)) then
+                    lib.callback('ogi-car-radio:server:getRadioForVehicle', false, function(radio)
+                        if not GetIsVehicleEngineRunning(vehicle) or not IsVehicleRadioEnabled(vehicle) then -- stop radio
+                            if not IsVehicleRadioEnabled(vehicle) or not GetIsVehicleEngineRunning(vehicle) then
+                                radioWheelDisabled = false
+                                youtubeActive = false
+                                TriggerServerEvent('ogi-car-radio:server:saveAudio', VehToNet(vehicle), nil, radioVolume, nil)
+                            end
+                        end
+                    end, VehToNet(vehicle))
                 end
-            end, NetworkGetNetworkIdFromEntity(vehicle))
+            end
         end
         Wait(2000)
     end
@@ -165,11 +169,11 @@ Citizen.CreateThread(function()
         for vehNetId, musicId in pairs(liveRadioSounds) do
             if musicId == nil then
                 liveRadioSounds[vehNetId] = nil
-            elseif not NetworkDoesEntityExistWithNetworkId(vehNetId) or GetVehicleEngineHealth(NetworkGetEntityFromNetworkId(vehNetid)) < 0 then
+            elseif vehNetId == nil or NetworkDoesEntityExistWithNetworkId(vehNetId) == false or GetVehicleEngineHealth(NetToVeh(vehNetId)) < 0 then
                 xSound:Destroy(musicId)
                 liveRadioSounds[vehNetId] = nil
             else
-                if GetVehiclePedIsIn(PlayerPedId(), false) == NetworkGetEntityFromNetworkId(vehNetId) then -- inside of vehicle in which radio is playing
+                if GetVehiclePedIsIn(PlayerPedId(), false) == NetToVeh(vehNetId) then -- inside of vehicle in which radio is playing
                     if xSound:getDistance(musicId) ~= Config.soundDistanceInMusicVehicle then -- update distance ONLY FOR people inside of a vehicle (client side)
                         xSound:Distance(musicId, Config.soundDistanceInMusicVehicle)
                     end
@@ -178,7 +182,7 @@ Citizen.CreateThread(function()
                         xSound:Distance(musicId, xSound:getVolume(musicId)*50) -- max distance = 50
                     end
                 end
-                xSound:Position(musicId, GetEntityCoords(NetworkGetEntityFromNetworkId(vehNetId)))
+                xSound:Position(musicId, GetEntityCoords(NetToVeh(vehNetId)))
             end
         end
         Wait(sleep)
