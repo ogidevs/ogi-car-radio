@@ -102,7 +102,6 @@ Citizen.CreateThread(function()
                 elseif not GetIsVehicleEngineRunning(vehicle) or not IsVehicleRadioEnabled(vehicle) then -- STOP RADIO
                     Citizen.SetTimeout(1500, function() -- wait for the player to leave vehicle
                         if not IsVehicleRadioEnabled(vehicle) or not GetIsVehicleEngineRunning(vehicle) then
-                            radioWheelDisabled = false
                             youtubeActive = false
                             TriggerServerEvent('ogi-car-radio:server:saveAudio', VehToNet(vehicle), nil, radioVolume, nil)
                         end
@@ -116,7 +115,6 @@ Citizen.CreateThread(function()
                     lib.callback('ogi-car-radio:server:getRadioForVehicle', false, function(radio)
                         if not GetIsVehicleEngineRunning(vehicle) or not IsVehicleRadioEnabled(vehicle) then -- stop radio
                             if not IsVehicleRadioEnabled(vehicle) or not GetIsVehicleEngineRunning(vehicle) then
-                                radioWheelDisabled = false
                                 youtubeActive = false
                                 TriggerServerEvent('ogi-car-radio:server:saveAudio', VehToNet(vehicle), nil, radioVolume, nil)
                             end
@@ -134,11 +132,14 @@ RegisterNetEvent('ogi-car-radio:client:syncAudio', function(vehNetId, musicId)
     SetFrontendRadioActive(false)
     if musicId == nil then
         SetVehRadioStation(GetVehiclePedIsIn(PlayerPedId()),"OFF")
+        liveRadioSounds[vehNetId] = nil
+        radioWheelDisabled = false
+        return
     end
-    
-    liveRadioSounds[vehNetId] = musicId
-    Wait(5000)
-    radioWheelDisabled = false
+    xSound:onPlayStart(musicId, function()
+        radioWheelDisabled = false
+        liveRadioSounds[vehNetId] = musicId
+    end)
 end)
 
 -- only show custom stations in vehicle
