@@ -64,7 +64,7 @@ Citizen.CreateThread(function()
             if customStations[radioStationName] == "options" and not youtubeActive then
                 StartAudioScene("DLC_MPHEIST_TRANSITION_TO_APT_FADE_IN_RADIO_SCENE")
                 SetFrontendRadioActive(false)
-                radioWheelDisabled = true
+                SetUserRadioControlEnabled(false)
                 local inputData = lib.inputDialog(Language[Config.Language]["name"], {
                     {
                         type = "number",
@@ -96,7 +96,7 @@ Citizen.CreateThread(function()
             end
             lib.callback('ogi-car-radio:server:getRadioForVehicle', false, function(radio)
                 if radio ~= customStations[radioStationName] and GetIsVehicleEngineRunning(vehicle) and IsVehicleRadioEnabled(vehicle) then -- PLAY NEW RADIO    
-                    radioWheelDisabled = true
+                    SetUserRadioControlEnabled(false)
                     youtubeActive = false
                     TriggerServerEvent('ogi-car-radio:server:saveAudio', VehToNet(vehicle), customStations[radioStationName], radioVolume, nil)
                 elseif not GetIsVehicleEngineRunning(vehicle) or not IsVehicleRadioEnabled(vehicle) then -- STOP RADIO
@@ -123,7 +123,7 @@ Citizen.CreateThread(function()
                 end
             end
         end
-        Wait(2000)
+        Wait(700)
     end
 end)
 
@@ -133,11 +133,11 @@ RegisterNetEvent('ogi-car-radio:client:syncAudio', function(vehNetId, musicId)
     if musicId == nil then
         SetVehRadioStation(GetVehiclePedIsIn(PlayerPedId()),"OFF")
         liveRadioSounds[vehNetId] = nil
-        radioWheelDisabled = false
+        SetUserRadioControlEnabled(true)
         return
     end
     xSound:onPlayStart(musicId, function()
-        radioWheelDisabled = false
+        SetUserRadioControlEnabled(true)
         liveRadioSounds[vehNetId] = musicId
     end)
 end)
@@ -159,7 +159,7 @@ Citizen.CreateThread(function()
         else
             Wait(1000)
         end
-        Wait(100)
+        Wait(500)
     end
 end)
 
@@ -187,28 +187,5 @@ Citizen.CreateThread(function()
             end
         end
         Wait(sleep)
-    end
-end)
-
--- disable radio wheel while changing radio, could possibly just leave this out
-CreateThread(function()
-    local ped = PlayerPedId()
-    while true do
-        local inVehicle = IsPedInAnyVehicle(ped, true)
-        if inVehicle then
-            if radioWheelDisabled then
-                -- controls for the radio wheel
-                DisableControlAction(0, 81, true)
-                DisableControlAction(0, 82, true)
-                DisableControlAction(0, 83, true)
-                DisableControlAction(0, 84, true)
-                DisableControlAction(0, 85, true)
-            else
-                Wait(500)
-            end
-        else
-            Wait(1000)
-        end
-        Wait(10)
     end
 end)
