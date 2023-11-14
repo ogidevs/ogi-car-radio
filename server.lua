@@ -1,22 +1,3 @@
-local function AutoDetectFramework()
-    if GetResourceState("es_extended") == "started" then
-        return "ESX"
-    else
-        return "qbcore"
-    end
-end
-
-if Config.Framework == "auto-detect" then
-    Config.Framework = AutoDetectFramework()
-end
-
-if Config.Framework == "ESX" then
-    ESX = exports["es_extended"]:getSharedObject()
-elseif Config.Framework == "qbcore" then
-    QBCore = nil
-    QBCore = exports['qb-core']:GetCoreObject()
-end
-
 local vehiclesRadio = {}
 
 xSound = exports.xsound
@@ -53,32 +34,14 @@ RegisterNetEvent('ogi-car-radio:server:saveAudio', function(vehNetId, radio, vol
     end
 end)
 
-if Config.Framework == "ESX" then
+lib.callback.register('ogi-car-radio:server:getRadioForVehicle', function(source, vehNetId)
+    if contains(get_keys(vehiclesRadio), vehNetId) then
+        return vehiclesRadio[vehNetId].radio
+    else
+        return false
+    end
+end)
 
-    ESX.RegisterServerCallback('ogi-car-radio:server:getRadioForVehicle', function(source, cb, vehNetId)
-        if contains(get_keys(vehiclesRadio), vehNetId) then
-            cb(vehiclesRadio[vehNetId].radio)
-        else
-            cb(false)
-        end
-    end)
-
-    ESX.RegisterServerCallback('ogi-car-radio:server:getRadios', function(source, cb)
-        cb(vehiclesRadio)
-    end)
-
-else
-
-    QBCore.Functions.CreateCallback('ogi-car-radio:server:getRadioForVehicle', function(source, cb, vehNetId)
-        if contains(get_keys(vehiclesRadio), vehNetId) then
-            cb(vehiclesRadio[vehNetId].radio)
-        else
-            cb(false)
-        end
-    end)
-
-    QBCore.Functions.CreateCallback('ogi-car-radio:server:getRadios', function(source, cb)
-        cb(vehiclesRadio)
-    end)
-
-end
+lib.callback.register('ogi-car-radio:server:getRadios', function(source)
+    return vehiclesRadio
+end)
