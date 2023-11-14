@@ -16,7 +16,7 @@ My Discord: ogidev
 
 ## Dependencies
 
-1. qb-core (https://github.com/search?q=qbcore&type=repositories)
+1. qb-core/QBox/ESX (https://github.com/search?q=qbcore&type=repositories / https://github.com/Qbox-project/qbx_core / https://github.com/esx-framework/esx_core)
 2. ox_lib - for the options menu (https://github.com/overextended/ox_lib)
 3. xsound (https://github.com/Xogy/xsound)
 

@@ -2,7 +2,7 @@ fx_version 'cerulean'
 game 'gta5'
 author 'ogidevs'
 version '0.0.2'
-description 'Car audio system for QBCore/ESX'
+description 'Car audio system for QBCore/QBox/ESX'
 
 client_scripts {
 	"locales/main.lua",
