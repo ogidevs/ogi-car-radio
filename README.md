@@ -55,4 +55,5 @@ If you encounter any bug, please feel free to reach out to me on discord (ogidev
 1. Feel free to do PRs
 ### CONTRIBUTIONS
 
-Big thanks to tsfs (discord) for rewritting the lang and adding support for ESX 
+Big thanks to tsfs (discord) for rewritting the lang and adding support for ESX <br>
+Many thanks to alpaczka. (discord) for adding polish translation.

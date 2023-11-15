@@ -28,4 +28,13 @@ Language = {
         ['custom_url_help'] = "Unesi youtube URL da pustis na radiju",
         ['custom_url_icon'] = "youtube"
     },
+    ['PL'] = { --polish
+        ['name'] = 'Radio samochodowe',
+        ['volume_label'] = 'Głośność',
+        ['volume_help'] = 'Zmiana głośności radia',
+        ['volume_icon'] = 'volume-high',
+        ['custom_url_label'] = 'Link z YouTube',
+        ['custom_url_help'] = 'Wklej tutaj link do utworu, który chcesz odtworzyć w radiu.',
+        ['custom_url_icon'] = 'youtube'
+    },
 }
