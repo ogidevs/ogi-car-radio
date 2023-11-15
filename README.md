@@ -36,7 +36,7 @@ My Discord: ogidev
 1. Fully synced radios between players
 2. Radios can be heard outside of the vehicles that have their engines on
 3. 0.00 - 0.01 CPU usage
-4. Multi-Language Support using QBCore Locales
+4. Multi-Language Support
 5. 24/7 Support on discord
 
 ![Screenshot](https://cdn.discordapp.com/attachments/1173699009806860308/1173699010482151454/image.png?ex=6564e762&is=65527262&hm=3581b96296c25881a8c668c6c528f5f5ffe977d2aca730bfc762661a4546fea7&)
