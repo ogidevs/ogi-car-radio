@@ -12,6 +12,7 @@ client_scripts {
 server_scripts {
 	"locales/main.lua",
 	"server.lua",
+	"vercheck.lua",
 }
 
 shared_scripts {

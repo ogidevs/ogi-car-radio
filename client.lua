@@ -23,6 +23,7 @@ if Config.Framework == "ESX" then
         ESX.TriggerServerCallback('ogi-car-radio:server:getRadios', function(vehicles)
             for vehNetId, info in pairs(vehicles) do
                 TriggerEvent('ogi-car-radio:client:syncAudio', vehNetId, info.radio, info.volume, info.url)
+                TriggerEvent('ogi-car-radio:client:setupRadio')
             end
         end)
     end)
@@ -31,29 +32,49 @@ elseif Config.Framework == "qbcore" then
         lib.callback('ogi-car-radio:server:getRadios', false, function(vehicles)
             for vehNetId, info in pairs(vehicles) do
                 TriggerEvent('ogi-car-radio:client:syncAudio', vehNetId, info.radio, info.volume, info.url)
+                TriggerEvent('ogi-car-radio:client:setupRadio')
             end
         end)
     end)
 end
 
--- iterate through all radios, filter the ones that are used as custom and show only those
-for i = 0, GetNumResourceMetadata("ogi-car-radio", "supersede_radio") - 1 do
-    local radio = GetResourceMetadata("ogi-car-radio", "supersede_radio", i)
-    if not contains(Config.availableRadios, radio) then
-        print("radio: " .. radio .. " is an invalid radio.")
-    else
-        local data = json.decode(GetResourceMetadata("ogi-car-radio", "supersede_radio_extra", i))
-        if data ~= nil then
-            customStations[radio] = data.url
-            if data.name then
-                AddTextEntry(radio, data.name)
+RegisterNetEvent('ogi-car-radio:client:setupRadio', function()
+        -- iterate through all radios, filter the ones that are used as custom and show only those
+        print(GetCurrentResourceName())
+        for i = 0, GetNumResourceMetadata(GetCurrentResourceName(), "supersede_radio") - 1 do
+            local radio = GetResourceMetadata(GetCurrentResourceName(), "supersede_radio", i)
+            if not contains(Config.availableRadios, radio) then
+                print("radio: " .. radio .. " is an invalid radio.")
+            else
+                local data = json.decode(GetResourceMetadata(GetCurrentResourceName(), "supersede_radio_extra", i))
+                if data ~= nil then
+                    customStations[radio] = data.url
+                    if data.name then
+                        AddTextEntry(radio, data.name)
+                    end
+                else
+                    print("radio: Missing data for " .. radio .. ".")
+                end
             end
-        else
-            print("radio: Missing data for " .. radio .. ".")
         end
     end
-end
+end)
 
+RegisterNetEvent('ogi-car-radio:client:syncAudio', function(vehNetId, musicId)
+    StartAudioScene("DLC_MPHEIST_TRANSITION_TO_APT_FADE_IN_RADIO_SCENE")
+    SetFrontendRadioActive(false)
+    if musicId == nil then
+        SetVehRadioStation(GetVehiclePedIsIn(PlayerPedId()),"OFF")
+        liveRadioSounds[vehNetId] = nil
+        SetUserRadioControlEnabled(true)
+        return
+    end
+    xSound:onPlayStart(musicId, function()
+        SetUserRadioControlEnabled(true)
+        liveRadioSounds[vehNetId] = musicId
+    end)
+end)
+    
 -- main logic
 Citizen.CreateThread(function()
     while true do
@@ -123,23 +144,8 @@ Citizen.CreateThread(function()
                 end
             end
         end
-        Wait(700)
+        Wait(1000)
     end
-end)
-
-RegisterNetEvent('ogi-car-radio:client:syncAudio', function(vehNetId, musicId)
-    StartAudioScene("DLC_MPHEIST_TRANSITION_TO_APT_FADE_IN_RADIO_SCENE")
-    SetFrontendRadioActive(false)
-    if musicId == nil then
-        SetVehRadioStation(GetVehiclePedIsIn(PlayerPedId()),"OFF")
-        liveRadioSounds[vehNetId] = nil
-        SetUserRadioControlEnabled(true)
-        return
-    end
-    xSound:onPlayStart(musicId, function()
-        SetUserRadioControlEnabled(true)
-        liveRadioSounds[vehNetId] = musicId
-    end)
 end)
 
 -- only show custom stations in vehicle
