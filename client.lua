@@ -20,19 +20,19 @@ end
 if Config.Framework == "ESX" then
     RegisterNetEvent('esx:playerLoaded')
     AddEventHandler('esx:playerLoaded', function()
-        ESX.TriggerServerCallback('ogi-car-radio:server:getRadios', function(vehicles)
+        TriggerEvent('ogi-car-radio:client:setupRadio')
+        lib.callback('ogi-car-radio:server:getRadios', false, function(vehicles)
             for vehNetId, info in pairs(vehicles) do
                 TriggerEvent('ogi-car-radio:client:syncAudio', vehNetId, info.radio, info.volume, info.url)
-                TriggerEvent('ogi-car-radio:client:setupRadio')
             end
         end)
     end)
 elseif Config.Framework == "qbcore" then
     RegisterNetEvent("QBCore:Client:OnPlayerLoaded", function()
+        TriggerEvent('ogi-car-radio:client:setupRadio')
         lib.callback('ogi-car-radio:server:getRadios', false, function(vehicles)
             for vehNetId, info in pairs(vehicles) do
                 TriggerEvent('ogi-car-radio:client:syncAudio', vehNetId, info.radio, info.volume, info.url)
-                TriggerEvent('ogi-car-radio:client:setupRadio')
             end
         end)
     end)
