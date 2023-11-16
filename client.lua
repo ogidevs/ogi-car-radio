@@ -39,22 +39,20 @@ elseif Config.Framework == "qbcore" then
 end
 
 RegisterNetEvent('ogi-car-radio:client:setupRadio', function()
-        -- iterate through all radios, filter the ones that are used as custom and show only those
-        print(GetCurrentResourceName())
-        for i = 0, GetNumResourceMetadata(GetCurrentResourceName(), "supersede_radio") - 1 do
-            local radio = GetResourceMetadata(GetCurrentResourceName(), "supersede_radio", i)
-            if not contains(Config.availableRadios, radio) then
-                print("radio: " .. radio .. " is an invalid radio.")
-            else
-                local data = json.decode(GetResourceMetadata(GetCurrentResourceName(), "supersede_radio_extra", i))
-                if data ~= nil then
-                    customStations[radio] = data.url
-                    if data.name then
-                        AddTextEntry(radio, data.name)
-                    end
-                else
-                    print("radio: Missing data for " .. radio .. ".")
+    -- iterate through all radios, filter the ones that are used as custom and show only those
+    for i = 0, GetNumResourceMetadata(GetCurrentResourceName(), "supersede_radio") - 1 do
+        local radio = GetResourceMetadata(GetCurrentResourceName(), "supersede_radio", i)
+        if not contains(Config.availableRadios, radio) then
+            print("radio: " .. radio .. " is an invalid radio.")
+        else
+            local data = json.decode(GetResourceMetadata(GetCurrentResourceName(), "supersede_radio_extra", i))
+            if data ~= nil then
+                customStations[radio] = data.url
+                if data.name then
+                    AddTextEntry(radio, data.name)
                 end
+            else
+                print("radio: Missing data for " .. radio .. ".")
             end
         end
     end
@@ -74,7 +72,7 @@ RegisterNetEvent('ogi-car-radio:client:syncAudio', function(vehNetId, musicId)
         liveRadioSounds[vehNetId] = musicId
     end)
 end)
-    
+
 -- main logic
 Citizen.CreateThread(function()
     while true do
