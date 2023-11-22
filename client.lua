@@ -70,13 +70,13 @@ RegisterNetEvent('ogi-car-radio:client:syncAudio', function(vehNetId, musicId)
 end)
 
 -- main logic
-Citizen.CreateThread(function()
+CreateThread(function()
     while true do
         local ped = PlayerPedId()
         local vehicle = GetVehiclePedIsIn(ped, false)
         if vehicle ~= 0 and vehicle ~= nil then
             radioStationName = GetPlayerRadioStationName()
-            if customStations[radioStationName] == "options" and not youtubeActive and GetPedInVehicleSeat(vehicle, -1) == GetPlayerPed(-1) then
+            if customStations[radioStationName] == "options" and not youtubeActive and GetPedInVehicleSeat(vehicle, -1) == PlayerPedId() then
                 StartAudioScene("DLC_MPHEIST_TRANSITION_TO_APT_FADE_IN_RADIO_SCENE")
                 SetFrontendRadioActive(false)
                 SetUserRadioControlEnabled(false)
@@ -115,7 +115,7 @@ Citizen.CreateThread(function()
                     youtubeActive = false
                     TriggerServerEvent('ogi-car-radio:server:saveAudio', VehToNet(vehicle), customStations[radioStationName], radioVolume, nil)
                 elseif not GetIsVehicleEngineRunning(vehicle) or not IsVehicleRadioEnabled(vehicle) then -- STOP RADIO
-                    Citizen.SetTimeout(1500, function() -- wait for the player to leave vehicle
+                    SetTimeout(1500, function() -- wait for the player to leave vehicle
                         if not IsVehicleRadioEnabled(vehicle) or not GetIsVehicleEngineRunning(vehicle) then
                             youtubeActive = false
                             TriggerServerEvent('ogi-car-radio:server:saveAudio', VehToNet(vehicle), nil, radioVolume, nil)
@@ -143,7 +143,7 @@ Citizen.CreateThread(function()
 end)
 
 -- only show custom stations in vehicle
-Citizen.CreateThread(function()
+CreateThread(function()
     while true do
         local ped = PlayerPedId()
         local inVehicle = IsPedInAnyVehicle(ped, true)
@@ -164,7 +164,7 @@ Citizen.CreateThread(function()
 end)
 
 -- update sound pos or destroy if vehicle is gone
-Citizen.CreateThread(function()
+CreateThread(function()
     while true do
         local sleep = 500
         for vehNetId, musicId in pairs(liveRadioSounds) do
