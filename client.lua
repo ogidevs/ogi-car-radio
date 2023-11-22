@@ -76,7 +76,7 @@ Citizen.CreateThread(function()
         local vehicle = GetVehiclePedIsIn(ped, false)
         if vehicle ~= 0 and vehicle ~= nil then
             radioStationName = GetPlayerRadioStationName()
-            if customStations[radioStationName] == "options" and not youtubeActive and GetPedInVehicleSeat(vehicle, -1) == GetPlayerPed(-1) then
+            if customStations[radioStationName] == "options" and not youtubeActive and GetPedInVehicleSeat(vehicle, -1) == PlayerPedId() then
                 StartAudioScene("DLC_MPHEIST_TRANSITION_TO_APT_FADE_IN_RADIO_SCENE")
                 SetFrontendRadioActive(false)
                 SetUserRadioControlEnabled(false)
